@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estate Planning Organizer</title>
+<style>
+/* ===== RESET & BASE ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+*:focus { outline: 3px solid #5B8AB8; outline-offset: 2px; }
+
+:root {
+  --blue-700: #3A6B8C;
+  --blue-500: #5B8AB8;
+  --blue-100: #D6E4F0;
+  --blue-50:  #EEF5FB;
+  --green-600: #5A8C6A;
+  --green-500: #6FA67E;
+  --green-100: #D9EBDE;
+  --green-50:  #EEF7F1;
+  --warn-500: #C97B3F;
+  --warn-100: #F5E1D0;
+  --ink-900: #2A3340;
+  --ink-700: #445462;
+  --ink-500: #6B7884;
+  --ink-300: #A8B2BC;
+  --ink-100: #E4E8EC;
+  --white:   #FFFFFF;
+  --cream:   #FAF8F4;
+  --shadow: 0 2px 8px rgba(42,51,64,0.10);
+  --shadow-lg: 0 4px 20px rgba(42,51,64,0.15);
+  --radius: 12px;
+  --serif: Georgia, "Times New Roman", "Palatino Linotype", Palatino, serif;
+  --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+html { font-size: 18px; scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--ink-900);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+/* ===== LAYOUT ===== */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--blue-50);
+  border-right: 1px solid var(--blue-100);
+  padding: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.main {
+  flex: 1;
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 40px 48px;
+  flex: 1;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar-wrap {
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  padding: 16px 40px;
+  border-bottom: 1px solid var(--ink-100);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.progress-label {
+  font-size: 0.9rem;
+  color: var(--ink-500);
+  white-space: nowrap;
+  font-weight: 600;
+}
+.progress-track {
+  flex: 1;
+  height: 12px;
+  background: var(--ink-100);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-500), var(--blue-500));
+  border-radius: 6px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-pct {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--blue-700);
+  min-width: 56px;
+  text-align: right;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--blue-100);
+}
+.sidebar-header h1 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  color: var(--blue-700);
+  line-height: 1.3;
+}
+.sidebar-header p {
+  font-size: 0.8rem;
+  color: var(--ink-500);
+  margin-top: 4px;
+}
+
+.nav-list { list-style: none; padding: 8px 0; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  color: var(--ink-700);
+  font-family: var(--sans);
+  transition: background 0.15s;
+  border-left: 4px solid transparent;
+}
+.nav-item:hover { background: var(--blue-100); }
+.nav-item.active {
+  background: var(--blue-100);
+  border-left-color: var(--blue-500);
+  color: var(--blue-700);
+  font-weight: 700;
+}
+.nav-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--white);
+  background: var(--white);
+}
+.nav-check.done {
+  background: var(--green-500);
+  border-color: var(--green-500);
+}
+.nav-check.partial {
+  border-color: var(--warn-500);
+  background: var(--warn-100);
+}
+.nav-num {
+  font-size: 0.8rem;
+  color: var(--ink-300);
+  font-weight: 700;
+  min-width: 20px;
+}
+.nav-item.active .nav-num { color: var(--blue-500); }
+.nav-text { flex: 1; line-height: 1.3; }
+
+.sidebar-actions {
+  padding: 16px 20px 24px;
+  border-top: 1px solid var(--blue-100);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 1.05rem;
+  font-family: var(--sans);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 48px;
+  text-decoration: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--blue-500);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--blue-700); }
+.btn-secondary {
+  background: var(--white);
+  color: var(--blue-700);
+  border: 2px solid var(--blue-100);
+}
+.btn-secondary:hover { background: var(--blue-50); }
+.btn-success {
+  background: var(--green-500);
+  color: var(--white);
+}
+.btn-success:hover { background: var(--green-600); }
+.btn-warn {
+  background: var(--warn-500);
+  color: var(--white);
+}
+.btn-warn:hover { opacity: 0.9; }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-500);
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  min-height: 40px;
+}
+.btn-ghost:hover { background: var(--ink-100); }
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  min-height: 40px;
+}
+.btn-full { width: 100%; }
+.btn-add {
+  background: var(--green-50);
+  color: var(--green-600);
+  border: 2px dashed var(--green-500);
+  width: 100%;
+  margin-top: 16px;
+}
+.btn-add:hover { background: var(--green-100); }
+.btn-remove {
+  background: transparent;
+  color: #B85555;
+  border: 1px solid #E0B0B0;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  min-height: 36px;
+  border-radius: 8px;
+}
+.btn-remove:hover { background: #F8E8E8; }
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 40px;
+  gap: 16px;
+}
+
+/* ===== SECTIONS ===== */
+.section { display: none; }
+.section.active { display: block; }
+
+.section-title {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  color: var(--blue-700);
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+.section-intro {
+  font-size: 1.05rem;
+  color: var(--ink-500);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+/* ===== FORMS ===== */
+.field-group {
+  margin-bottom: 24px;
+}
+.field {
+  margin-bottom: 20px;
+}
+.field-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink-700);
+  margin-bottom: 6px;
+}
+.field-hint {
+  font-size: 0.85rem;
+  color: var(--ink-500);
+  margin-bottom: 6px;
+}
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1.05rem;
+  font-family: var(--sans);
+  border: 2px solid var(--ink-100);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink-900);
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue-500);
+}
+textarea { resize: vertical; min-height: 100px; }
+select { cursor: pointer; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.field-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .field-row, .field-row-3 { grid-template-columns: 1fr; }
+}
+
+.radio-group, .checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.radio-label, .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid var(--ink-100);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  background: var(--white);
+  transition: all 0.15s;
+}
+.radio-label:hover, .checkbox-label:hover {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+}
+.radio-label input, .checkbox-label input {
+  width: 22px; height: 22px;
+  accent-color: var(--blue-500);
+}
+.radio-label.checked, .checkbox-label.checked {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+}
+
+/* ===== REPEATABLE ENTRIES ===== */
+.entry {
+  background: var(--white);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ink-100);
+}
+.entry-title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--ink-700);
+  font-weight: 700;
+}
+.entry-actions { display: flex; gap: 8px; }
+
+/* ===== WELCOME SECTION ===== */
+.welcome-hero {
+  text-align: center;
+  padding: 40px 20px;
+}
+.welcome-hero .icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+.welcome-hero h2 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  color: var(--blue-700);
+  margin-bottom: 16px;
+}
+.welcome-hero p {
+  font-size: 1.15rem;
+  color: var(--ink-700);
+  max-width: 560px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+.welcome-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 32px 0;
+}
+@media (max-width: 700px) { .welcome-features { grid-template-columns: 1fr; } }
+.welcome-feature {
+  background: var(--white);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.welcome-feature .icon { font-size: 2.5rem; margin-bottom: 12px; }
+.welcome-feature h3 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--ink-700);
+  margin-bottom: 8px;
+}
+.welcome-feature p { font-size: 0.95rem; color: var(--ink-500); }
+
+.privacy-banner {
+  background: var(--green-50);
+  border: 2px solid var(--green-100);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 24px 0;
+  text-align: center;
+}
+.privacy-banner .icon { font-size: 2rem; }
+.privacy-banner h3 {
+  font-family: var(--serif);
+  color: var(--green-600);
+  font-size: 1.3rem;
+  margin: 8px 0;
+}
+.privacy-banner p { color: var(--ink-700); font-size: 1rem; }
+
+/* ===== SUMMARY ===== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+@media (max-width: 700px) { .summary-grid { grid-template-columns: 1fr; } }
+.summary-card {
+  background: var(--white);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.summary-card h3 {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--ink-700);
+  margin-bottom: 12px;
+}
+.summary-pct-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.summary-pct-label { flex: 1; font-size: 0.95rem; color: var(--ink-700); }
+.summary-pct-bar {
+  width: 100px; height: 8px;
+  background: var(--ink-100);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.summary-pct-fill {
+  height: 100%;
+  background: var(--green-500);
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.summary-pct-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-width: 42px;
+  text-align: right;
+}
+
+.alert-box {
+  background: var(--warn-100);
+  border: 2px solid var(--warn-500);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.alert-box h3 {
+  font-family: var(--serif);
+  color: var(--warn-500);
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+.alert-box ul { margin-left: 20px; }
+.alert-box li { margin-bottom: 6px; color: var(--ink-700); }
+
+.recommendation-box {
+  background: var(--blue-50);
+  border: 2px solid var(--blue-500);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.recommendation-box h3 {
+  font-family: var(--serif);
+  color: var(--blue-700);
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
+.recommendation-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--blue-100);
+  font-size: 1.02rem;
+  color: var(--ink-700);
+  display: flex;
+  gap: 10px;
+}
+.recommendation-item:last-child { border-bottom: none; }
+.recommendation-item .icon { flex-shrink: 0; }
+
+.disclaimer {
+  background: var(--ink-100);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  font-size: 0.95rem;
+  color: var(--ink-700);
+  font-style: italic;
+  text-align: center;
+}
+
+/* ===== NOTIFICATION ===== */
+.save-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--green-600);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.save-toast.show { opacity: 1; transform: translateY(0); }
+
+/* ===== WARNING BOX ===== */
+.warning-box {
+  background: var(--warn-100);
+  border: 2px solid var(--warn-500);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  color: var(--ink-700);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.warning-box .icon { flex-shrink: 0; font-size: 1.3rem; }
+
+/* ===== MOBILE ===== */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 16px; left: 16px;
+  z-index: 20;
+  background: var(--blue-500);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+@media (max-width: 850px) {
+  .menu-toggle { display: block; }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .content { padding: 24px 20px 48px; }
+  .progress-bar-wrap { padding: 16px 20px; }
+  .nav-buttons { flex-direction: column; }
+  .nav-buttons .btn { width: 100%; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  .sidebar, .progress-bar-wrap, .nav-buttons, .menu-toggle,
+  .btn-remove, .btn-add, .sidebar-actions, .save-toast { display: none !important; }
+  .main { margin-left: 0; }
+  .content { max-width: 100%; padding: 0; }
+  .section { display: block !important; page-break-after: always; }
+  .section.active { display: block; }
+  body { background: white; font-size: 12pt; }
+  .entry { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+  .field-label { font-weight: 700; }
+  input, select, textarea {
+    border: 1px solid #ccc !important;
+    background: white !important;
+  }
+}
+
+/* ===== SCROLLBAR ===== */
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">&#9776; Menu</button>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>Estate Planning Organizer</h1>
+      <p>Your private planning companion</p>
+    </div>
+    <ul class="nav-list" id="navList"></ul>
+    <div class="sidebar-actions">
+      <button class="btn btn-secondary btn-sm" onclick="exportJSON()">&#11015; Download My Data (JSON)</button>
+      <button class="btn btn-secondary btn-sm" onclick="window.print()">&#128424; Print / Save as PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="confirmReset()">&#8634; Start Over</button>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-wrap">
+      <span class="progress-label">Overall Progress</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content" id="content">
+
+      <!-- ===== SECTION 1: WELCOME ===== -->
+      <section class="section active" id="sec-0" data-step="0">
+        <div class="welcome-hero">
+          <div class="icon">&#127968;</div>
+          <h2>Welcome to Your Estate Planning Organizer</h2>
+          <p>This tool helps you gather and organize important information about your life, finances, and wishes — all in one place. It's the first step in making things easier for you and your loved ones.</p>
+        </div>
+
+        <div class="privacy-banner">
+          <div class="icon">&#128274;</div>
+          <h3>Your Information Stays on This Computer</h3>
+          <p>Nothing you type is sent to the internet. Everything is saved right here in your web browser. Only you can see it. You can download or print it whenever you like.</p>
+        </div>
+
+        <div class="welcome-features">
+          <div class="welcome-feature">
+            <div class="icon">&#128221;</div>
+            <h3>Step-by-Step Guide</h3>
+            <p>Eleven simple sections walk you through everything, one piece at a time.</p>
+          </div>
+          <div class="welcome-feature">
+            <div class="icon">&#128190;</div>
+            <h3>Saves Automatically</h3>
+            <p>Every word you type is saved instantly. You can stop and come back anytime.</p>
+          </div>
+          <div class="welcome-feature">
+            <div class="icon">&#128202;</div>
+            <h3>See Your Progress</h3>
+            <p>Track what you've completed and what still needs attention.</p>
+          </div>
+          <div class="welcome-feature">
+            <div class="icon">&#128424;</div>
+            <h3>Print or Download</h3>
+            <p>When you're done, print a copy for your records or share with your attorney.</p>
+          </div>
+        </div>
+
+        <p style="text-align:center; color:var(--ink-500); margin: 24px 0; font-size:1rem;">
+          <strong>Tip:</strong> You don't have to do it all at once. Complete a few sections now, and come back later. Your work will be here.
+        </p>
+
+        <div class="nav-buttons">
+          <span></span>
+          <button class="btn btn-primary" onclick="goTo(1)">Get Started &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 2: PERSONAL INFORMATION ===== -->
+      <section class="section" id="sec-1" data-step="1">
+        <h2 class="section-title">Personal Information</h2>
+        <p class="section-intro">Let's start with the basics. This information identifies you and helps your executor contact the right people.</p>
+
+        <div class="field-group">
+          <h3 style="font-family:var(--serif); color:var(--blue-700); margin-bottom:16px; font-size:1.2rem;">About You</h3>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Full Legal Name</label>
+              <input type="text" data-section="personal" data-field="fullName" placeholder="Jane Marie Smith">
+            </div>
+            <div class="field">
+              <label class="field-label">Date of Birth</label>
+              <input type="date" data-section="personal" data-field="dob">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Social Security Number</label>
+              <input type="text" data-section="personal" data-field="ssn" placeholder="XXX-XX-XXXX">
+            </div>
+            <div class="field">
+              <label class="field-label">Marital Status</label>
+              <select data-section="personal" data-field="maritalStatus">
+                <option value="">Select one...</option>
+                <option value="single">Single</option>
+                <option value="married">Married</option>
+                <option value="divorced">Divorced</option>
+                <option value="widowed">Widowed</option>
+                <option value="domestic">Domestic Partnership</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Home Address</label>
+            <input type="text" data-section="personal" data-field="address" placeholder="123 Main Street, City, State ZIP">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Phone Number</label>
+              <input type="tel" data-section="personal" data-field="phone" placeholder="(555) 123-4567">
+            </div>
+            <div class="field">
+              <label class="field-label">Email Address</label>
+              <input type="email" data-section="personal" data-field="email" placeholder="jane@example.com">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group" id="spouseGroup" style="display:none;">
+          <h3 style="font-family:var(--serif); color:var(--blue-700); margin-bottom:16px; font-size:1.2rem;">Spouse / Partner</h3>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Spouse Full Name</label>
+              <input type="text" data-section="personal" data-field="spouseName" placeholder="John Robert Smith">
+            </div>
+            <div class="field">
+              <label class="field-label">Spouse Date of Birth</label>
+              <input type="date" data-section="personal" data-field="spouseDob">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Spouse Social Security Number</label>
+              <input type="text" data-section="personal" data-field="spouseSsn" placeholder="XXX-XX-XXXX">
+            </div>
+            <div class="field">
+              <label class="field-label">Is this a second marriage for either of you?</label>
+              <select data-section="personal" data-field="secondMarriage">
+                <option value="">Select one...</option>
+                <option value="no">No</option>
+                <option value="yes-me">Yes, for me</option>
+                <option value="yes-spouse">Yes, for my spouse</option>
+                <option value="yes-both">Yes, for both of us</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <h3 style="font-family:var(--serif); color:var(--blue-700); margin-bottom:16px; font-size:1.2rem;">Children & Dependents</h3>
+          <p class="field-hint">Add each child or dependent. Include adult children too — they may be beneficiaries.</p>
+          <div id="childrenContainer"></div>
+          <button class="btn btn-add" onclick="addEntry('children')">&#43; Add Another Child or Dependent</button>
+        </div>
+
+        <div class="field-group">
+          <h3 style="font-family:var(--serif); color:var(--blue-700); margin-bottom:16px; font-size:1.2rem;">Key Contacts</h3>
+          <p class="field-hint">People who may help carry out your wishes or provide information.</p>
+          <div id="contactsContainer"></div>
+          <button class="btn btn-add" onclick="addEntry('contacts')">&#43; Add Another Contact</button>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(0)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(2)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 3: FINANCIAL ACCOUNTS ===== -->
+      <section class="section" id="sec-2" data-step="2">
+        <h2 class="section-title">Financial Accounts</h2>
+        <p class="section-intro">List your bank accounts, retirement accounts, and investments. This helps your executor find and manage your assets.</p>
+
+        <div id="accountsContainer"></div>
+        <button class="btn btn-add" onclick="addEntry('accounts')">&#43; Add Another Account</button>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(1)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(3)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 4: REAL ESTATE & VEHICLES ===== -->
+      <section class="section" id="sec-3" data-step="3">
+        <h2 class="section-title">Real Estate & Vehicles</h2>
+        <p class="section-intro">List your property — homes, land, vehicles, boats, and anything else with significant value.</p>
+
+        <div id="propertyContainer"></div>
+        <button class="btn btn-add" onclick="addEntry('property')">&#43; Add Another Property or Vehicle</button>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(2)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(4)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 5: PERSONAL PROPERTY & VALUABLES ===== -->
+      <section class="section" id="sec-4" data-step="4">
+        <h2 class="section-title">Personal Property & Valuables</h2>
+        <p class="section-intro">List items with financial or sentimental value — jewelry, art, antiques, collectibles, family heirlooms, and more.</p>
+
+        <div id="valuablesContainer"></div>
+        <button class="btn btn-add" onclick="addEntry('valuables')">&#43; Add Another Item</button>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(3)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(5)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 6: DIGITAL ASSETS ===== -->
+      <section class="section" id="sec-5" data-step="5">
+        <h2 class="section-title">Digital Assets</h2>
+        <p class="section-intro">List your online accounts and digital property so your family can access, close, or memorialize them.</p>
+
+        <div class="warning-box">
+          <span class="icon">&#9888;&#65039;</span>
+          <div><strong>Important:</strong> Do NOT type your actual passwords here. Instead, write a hint that only you or a trusted person would understand (for example: "the name of my first dog + my birthday"). Store real passwords in a password manager or a separate secure document.</div>
+        </div>
+
+        <div id="digitalContainer"></div>
+        <button class="btn btn-add" onclick="addEntry('digital')">&#43; Add Another Digital Asset</button>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(4)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(6)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 7: DEBTS & LOANS ===== -->
+      <section class="section" id="sec-6" data-step="6">
+        <h2 class="section-title">Debts & Loans</h2>
+        <p class="section-intro">List what you owe — mortgages, car loans, credit cards, personal loans. This helps ensure debts are properly handled.</p>
+
+        <div id="debtsContainer"></div>
+        <button class="btn btn-add" onclick="addEntry('debts')">&#43; Add Another Debt or Loan</button>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(5)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(7)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 8: INSURANCE POLICIES ===== -->
+      <section class="section" id="sec-7" data-step="7">
+        <h2 class="section-title">Insurance Policies</h2>
+        <p class="section-intro">List your insurance policies. Life insurance and other policies may be key parts of your estate plan.</p>
+
+        <div id="insuranceContainer"></div>
+        <button class="btn btn-add" onclick="addEntry('insurance')">&#43; Add Another Policy</button>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(6)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(8)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 9: EXISTING ESTATE DOCUMENTS ===== -->
+      <section class="section" id="sec-8" data-step="8">
+        <h2 class="section-title">Existing Estate Documents</h2>
+        <p class="section-intro">Do you already have any estate planning documents? This helps identify what's done and what may need updating.</p>
+
+        <!-- Will -->
+        <div class="entry" style="margin-bottom:24px;">
+          <div class="entry-header"><div class="entry-title">Last Will & Testament</div></div>
+          <div class="field">
+            <label class="field-label">Do you have a will?</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="hasWill" data-section="documents" data-field="hasWill" value="yes"> Yes</label>
+              <label class="radio-label"><input type="radio" name="hasWill" data-section="documents" data-field="hasWill" value="no"> No</label>
+              <label class="radio-label"><input type="radio" name="hasWill" data-section="documents" data-field="hasWill" value="unsure"> Not Sure</label>
+            </div>
+          </div>
+          <div id="willDetails" style="display:none;">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Date Signed</label>
+                <input type="date" data-section="documents" data-field="willDate">
+              </div>
+              <div class="field">
+                <label class="field-label">Location of Original Document</label>
+                <input type="text" data-section="documents" data-field="willLocation" placeholder="e.g., safe deposit box at First National Bank">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Attorney Who Prepared It</label>
+              <input type="text" data-section="documents" data-field="willAttorney" placeholder="Name and phone number">
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust -->
+        <div class="entry" style="margin-bottom:24px;">
+          <div class="entry-header"><div class="entry-title">Trust</div></div>
+          <div class="field">
+            <label class="field-label">Do you have a trust?</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="hasTrust" data-section="documents" data-field="hasTrust" value="yes"> Yes</label>
+              <label class="radio-label"><input type="radio" name="hasTrust" data-section="documents" data-field="hasTrust" value="no"> No</label>
+              <label class="radio-label"><input type="radio" name="hasTrust" data-section="documents" data-field="hasTrust" value="unsure"> Not Sure</label>
+            </div>
+          </div>
+          <div id="trustDetails" style="display:none;">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Type of Trust</label>
+                <select data-section="documents" data-field="trustType">
+                  <option value="">Select one...</option>
+                  <option value="revocable">Revocable Living Trust</option>
+                  <option value="irrevocable">Irrevocable Trust</option>
+                  <option value="special">Special Needs Trust</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">Date Created</label>
+                <input type="date" data-section="documents" data-field="trustDate">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Location of Trust Document</label>
+              <input type="text" data-section="documents" data-field="trustLocation" placeholder="e.g., attorney's office, home safe">
+            </div>
+          </div>
+        </div>
+
+        <!-- Power of Attorney -->
+        <div class="entry" style="margin-bottom:24px;">
+          <div class="entry-header"><div class="entry-title">Power of Attorney</div></div>
+          <div class="field">
+            <label class="field-label">Do you have a power of attorney?</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="hasPoa" data-section="documents" data-field="hasPoa" value="yes"> Yes</label>
+              <label class="radio-label"><input type="radio" name="hasPoa" data-section="documents" data-field="hasPoa" value="no"> No</label>
+              <label class="radio-label"><input type="radio" name="hasPoa" data-section="documents" data-field="hasPoa" value="unsure"> Not Sure</label>
+            </div>
+          </div>
+          <div id="poaDetails" style="display:none;">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">Type of Power of Attorney</label>
+                <select data-section="documents" data-field="poaType">
+                  <option value="">Select one...</option>
+                  <option value="financial">Financial</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="both">Both Financial & Healthcare</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">Name of Your Agent (the person you appointed)</label>
+                <input type="text" data-section="documents" data-field="poaAgent" placeholder="Full name and phone number">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Healthcare Directive -->
+        <div class="entry" style="margin-bottom:24px;">
+          <div class="entry-header"><div class="entry-title">Healthcare Directive / Living Will</div></div>
+          <div class="field">
+            <label class="field-label">Do you have a healthcare directive or living will?</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="hasHcd" data-section="documents" data-field="hasHcd" value="yes"> Yes</label>
+              <label class="radio-label"><input type="radio" name="hasHcd" data-section="documents" data-field="hasHcd" value="no"> No</label>
+              <label class="radio-label"><input type="radio" name="hasHcd" data-section="documents" data-field="hasHcd" value="unsure"> Not Sure</label>
+            </div>
+          </div>
+          <div id="hcdDetails" style="display:none;">
+            <div class="field">
+              <label class="field-label">Location of Document</label>
+              <input type="text" data-section="documents" data-field="hcdLocation" placeholder="e.g., filed with my doctor, home safe">
+            </div>
+          </div>
+        </div>
+
+        <!-- Beneficiary Designations -->
+        <div class="entry" style="margin-bottom:24px;">
+          <div class="entry-header"><div class="entry-title">Beneficiary Designations</div></div>
+          <div class="field">
+            <label class="field-label">Have you reviewed your beneficiary designations recently?</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="benReviewed" data-section="documents" data-field="benReviewed" value="yes"> Yes</label>
+              <label class="radio-label"><input type="radio" name="benReviewed" data-section="documents" data-field="benReviewed" value="no"> No</label>
+              <label class="radio-label"><input type="radio" name="benReviewed" data-section="documents" data-field="benReviewed" value="unsure"> Not Sure</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(7)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(9)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 10: FINAL WISHES ===== -->
+      <section class="section" id="sec-9" data-step="9">
+        <h2 class="section-title">Final Wishes</h2>
+        <p class="section-intro">This section lets your family know your preferences. Sharing these now can relieve them of difficult decisions later.</p>
+
+        <div class="field">
+          <label class="field-label">Burial or Cremation?</label>
+          <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="disposition" data-section="wishes" data-field="disposition" value="burial"> Burial</label>
+            <label class="radio-label"><input type="radio" name="disposition" data-section="wishes" data-field="disposition" value="cremation"> Cremation</label>
+            <label class="radio-label"><input type="radio" name="disposition" data-section="wishes" data-field="disposition" value="green"> Green / Natural Burial</label>
+            <label class="radio-label"><input type="radio" name="disposition" data-section="wishes" data-field="disposition" value="other"> Other</label>
+            <label class="radio-label"><input type="radio" name="disposition" data-section="wishes" data-field="disposition" value="undecided"> Undecided</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Service or Memorial Preferences</label>
+          <textarea data-section="wishes" data-field="servicePrefs" placeholder="e.g., I'd like a simple memorial service at my church. Please play my favorite song, 'Amazing Grace.' No flowers — donations to St. Jude instead."></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Organ Donation</label>
+          <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="organDonor" data-section="wishes" data-field="organDonor" value="yes"> Yes, I want to be an organ donor</label>
+            <label class="radio-label"><input type="radio" name="organDonor" data-section="wishes" data-field="organDonor" value="no"> No</label>
+            <label class="radio-label"><input type="radio" name="organDonor" data-section="wishes" data-field="organDonor" value="undecided"> Undecided</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Obituary Notes</label>
+          <textarea data-section="wishes" data-field="obituary" placeholder="e.g., Please mention my love of gardening and my years teaching at Lincoln Elementary. Survived by my children and grandchildren."></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Pet Care Instructions</label>
+          <textarea data-section="wishes" data-field="petCare" placeholder="e.g., My dog Max should go to my daughter Sarah. Funds for his care are in my savings account. He needs special food for his allergies."></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Other Wishes or Instructions</label>
+          <textarea data-section="wishes" data-field="otherWishes" placeholder="Anything else you want your family to know — messages, instructions, special requests, final words..." style="min-height:140px;"></textarea>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(8)">&larr; Back</button>
+          <button class="btn btn-primary" onclick="goTo(10)">Next &rarr;</button>
+        </div>
+      </section>
+
+      <!-- ===== SECTION 11: SUMMARY & RECOMMENDATIONS ===== -->
+      <section class="section" id="sec-10" data-step="10">
+        <h2 class="section-title">Summary & Recommendations</h2>
+        <p class="section-intro">Here's an overview of your progress and some suggestions to consider. You can go back to any section to update information.</p>
+
+        <div id="summaryContent"></div>
+
+        <div id="recommendationsDiv"></div>
+
+        <div class="disclaimer">
+          <strong>This is not legal advice.</strong> This tool is for organizing your information only. Estate planning laws vary by state. Please consult a qualified estate planning attorney before making decisions.
+        </div>
+
+        <div style="margin-top: 32px;">
+          <h3 style="font-family:var(--serif); color:var(--blue-700); margin-bottom:16px;">What to Do Next</h3>
+          <ol style="margin-left:20px; color:var(--ink-700); line-height:1.8; font-size:1rem;">
+            <li>Review your completed information for accuracy.</li>
+            <li>Print a copy for your records (use the Print button above or in the sidebar).</li>
+            <li>Download a digital backup (JSON file from the sidebar).</li>
+            <li>Schedule a meeting with an estate planning attorney.</li>
+            <li>Share the location of this document with a trusted family member or executor.</li>
+            <li>Review and update this document annually or after major life events.</li>
+          </ol>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goTo(9)">&larr; Back</button>
+          <button class="btn btn-success" onclick="goTo(0)">&#127968; Back to Start</button>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="save-toast" id="saveToast">&#10003; Saved</div>
+
+<script>
+"use strict";
+
+/* ========================================================================
+   DATA MODEL
+   ======================================================================== */
+
+var STORAGE_KEY = 'estatePlannerData_v1';
+var STATE_KEY = 'estatePlannerState_v1';
+
+var sectionDefs = [
+  { id: 'sec-0', step: 0, title: 'Welcome',            icon: '\u{1F3E8}' },
+  { id: 'sec-1', step: 1, title: 'Personal Information', icon: '\u{1F464}' },
+  { id: 'sec-2', step: 2, title: 'Financial Accounts',   icon: '\u{1F4B0}' },
+  { id: 'sec-3', step: 3, title: 'Real Estate & Vehicles', icon: '\u{1F697}' },
+  { id: 'sec-4', step: 4, title: 'Personal Property',    icon: '\u{1F48E}' },
+  { id: 'sec-5', step: 5, title: 'Digital Assets',       icon: '\u{1F310}' },
+  { id: 'sec-6', step: 6, title: 'Debts & Loans',        icon: '\u{1F4B8}' },
+  { id: 'sec-7', step: 7, title: 'Insurance Policies',   icon: '\u{1F6E1}\u{FE0F}' },
+  { id: 'sec-8', step: 8, title: 'Existing Documents',   icon: '\u{1F4DD}' },
+  { id: 'sec-9', step: 9, title: 'Final Wishes',         icon: '\u{1F339}' },
+  { id: 'sec-10', step: 10, title: 'Summary',            icon: '\u{1F4CA}' }
+];
+
+/* Repeatable entry definitions */
+var entryDefs = {
+  children: {
+    container: 'childrenContainer',
+    title: 'Child or Dependent',
+    fields: [
+      { name: 'childName',  label: 'Full Name',         type: 'text',   placeholder: 'Robert J. Smith' },
+      { name: 'childDob',   label: 'Date of Birth',     type: 'date',   placeholder: '' },
+      { name: 'childRel',   label: 'Relationship',      type: 'select', placeholder: '',
+        options: ['Child','Stepchild','Adopted child','Foster child','Dependent parent','Other dependent'] },
+      { name: 'childMinor', label: 'Is this person under 18?', type: 'select', placeholder: '',
+        options: ['— No','Yes, under 18'] }
+    ]
+  },
+  contacts: {
+    container: 'contactsContainer',
+    title: 'Key Contact',
+    fields: [
+      { name: 'contactType', label: 'Role',             type: 'select', placeholder: '',
+        options: ['Attorney','CPA / Accountant','Financial Advisor','Doctor','Insurance Agent','Funeral Home','Executor / Personal Representative','Trustee','Other'] },
+      { name: 'contactName', label: 'Full Name',         type: 'text',   placeholder: 'John A. Peterson, Esq.' },
+      { name: 'contactPhone',label: 'Phone Number',      type: 'tel',    placeholder: '(555) 123-4567' },
+      { name: 'contactEmail',label: 'Email Address',     type: 'email',  placeholder: 'john@lawfirm.com' }
+    ]
+  },
+  accounts: {
+    container: 'accountsContainer',
+    title: 'Financial Account',
+    fields: [
+      { name: 'acctInstitution', label: 'Institution Name',     type: 'text',   placeholder: 'e.g., Bank of America, Fidelity, Vanguard' },
+      { name: 'acctType',        label: 'Account Type',         type: 'select', placeholder: '',
+        options: ['Checking','Savings','401(k)','IRA','Roth IRA','Brokerage','Pension / Annuity','Certificate of Deposit (CD)','Money Market','Other'] },
+      { name: 'acctNumber',      label: 'Account Number (last 4 digits OK)', type: 'text', placeholder: 'e.g., 4567' },
+      { name: 'acctBalance',     label: 'Approximate Balance',  type: 'text',   placeholder: 'e.g., $50,000' },
+      { name: 'acctBeneficiary', label: 'Beneficiary Designated?', type: 'select', placeholder: '',
+        options: ['— Not sure','Yes','No'] },
+      { name: 'acctNotes',       label: 'Notes',                type: 'textarea', placeholder: 'Any additional details...' }
+    ]
+  },
+  property: {
+    container: 'propertyContainer',
+    title: 'Property or Vehicle',
+    fields: [
+      { name: 'propType',    label: 'Property Type',     type: 'select', placeholder: '',
+        options: ['Home','Land / Lot','Vehicle','Boat','RV / Camper','Other'] },
+      { name: 'propDesc',    label: 'Description',       type: 'text',   placeholder: 'e.g., 3-bedroom house, 2018 Toyota Camry' },
+      { name: 'propAddress', label: 'Address or Location', type: 'text',  placeholder: 'e.g., 123 Main St, Springfield, IL' },
+      { name: 'propValue',   label: 'Approximate Value', type: 'text',   placeholder: 'e.g., $350,000' },
+      { name: 'propLoan',    label: 'Owned Outright or Loan Balance?', type: 'text', placeholder: 'e.g., Owned outright, or $120,000 remaining' },
+      { name: 'propCoOwner', label: 'Co-Owner (if any)', type: 'text',   placeholder: 'e.g., spouse, jointly with sibling' }
+    ]
+  },
+  valuables: {
+    container: 'valuablesContainer',
+    title: 'Valuable Item',
+    fields: [
+      { name: 'valItem',    label: 'Item Description',       type: 'text',     placeholder: 'e.g., Grandmother\'s diamond ring, vintage coin collection' },
+      { name: 'valValue',   label: 'Approximate Value',      type: 'text',     placeholder: 'e.g., $5,000' },
+      { name: 'valLocation',label: 'Location',               type: 'text',     placeholder: 'e.g., home safe, safe deposit box, with daughter Sarah' },
+      { name: 'valSentiment',label: 'Who Should Receive This? (Sentimental Note)', type: 'textarea', placeholder: 'e.g., This should go to my granddaughter Emma' }
+    ]
+  },
+  digital: {
+    container: 'digitalContainer',
+    title: 'Digital Asset',
+    fields: [
+      { name: 'digPlatform', label: 'Platform or Service',   type: 'text',     placeholder: 'e.g., Facebook, Gmail, iCloud, Netflix, PayPal' },
+      { name: 'digUsername', label: 'Username or Email',      type: 'text',     placeholder: 'e.g., jsmith@gmail.com' },
+      { name: 'digHint',     label: 'Password Hint (NOT your real password!)', type: 'text', placeholder: 'e.g., name of first pet + my birthday' },
+      { name: 'digAction',   label: 'What Should Be Done With This Account?', type: 'select', placeholder: '',
+        options: ['— Close the account','Memorialize the account','Transfer to a family member','Download / save data, then close','Other'] },
+      { name: 'digNotes',    label: 'Notes',                  type: 'textarea', placeholder: 'Any additional details...' }
+    ]
+  },
+  debts: {
+    container: 'debtsContainer',
+    title: 'Debt or Loan',
+    fields: [
+      { name: 'debtCreditor', label: 'Creditor / Lender Name', type: 'text',   placeholder: 'e.g., Wells Fargo, Discover Card, Uncle Bob' },
+      { name: 'debtType',     label: 'Type of Debt',           type: 'select', placeholder: '',
+        options: ['Mortgage','Auto Loan','Credit Card','Personal Loan','Student Loan','Medical Debt','Home Equity Line','Business Debt','Other'] },
+      { name: 'debtBalance',  label: 'Approximate Balance Owed', type: 'text', placeholder: 'e.g., $25,000' },
+      { name: 'debtPayment',  label: 'Monthly Payment',        type: 'text',   placeholder: 'e.g., $450/month' }
+    ]
+  },
+  insurance: {
+    container: 'insuranceContainer',
+    title: 'Insurance Policy',
+    fields: [
+      { name: 'insType',     label: 'Type of Insurance',    type: 'select', placeholder: '',
+        options: ['Life','Health','Auto','Home / Homeowners','Long-Term Care','Disability','Umbrella Liability','Other'] },
+      { name: 'insCompany',  label: 'Insurance Company',    type: 'text',   placeholder: 'e.g., State Farm, MetLife, Blue Cross' },
+      { name: 'insPolicyNum',label: 'Policy Number',        type: 'text',   placeholder: 'e.g., LF-12345678' },
+      { name: 'insCoverage', label: 'Coverage Amount',      type: 'text',   placeholder: 'e.g., $500,000' },
+      { name: 'insBeneficiary',label: 'Beneficiary',        type: 'text',   placeholder: 'e.g., my spouse, my children equally' },
+      { name: 'insAgent',    label: 'Agent Contact (Name & Phone)', type: 'text', placeholder: 'e.g., Mary Johnson (555) 987-6543' }
+    ]
+  }
+};
+
+/* Data store */
+var data = {};
+var currentStep = 0;
+
+/* ========================================================================
+   INITIALIZATION
+   ======================================================================== */
+
+function loadData() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      data = JSON.parse(raw);
+    }
+  } catch(e) {
+    data = {};
+  }
+  /* Ensure all sections exist */
+  if (!data.personal) data.personal = {};
+  if (!data.documents) data.documents = {};
+  if (!data.wishes) data.wishes = {};
+  if (!data.accounts) data.accounts = [];
+  if (!data.property) data.property = [];
+  if (!data.valuables) data.valuables = [];
+  if (!data.digital) data.digital = [];
+  if (!data.debts) data.debts = [];
+  if (!data.insurance) data.insurance = [];
+  if (!data.children) data.children = [];
+  if (!data.contacts) data.contacts = [];
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem(STATE_KEY);
+    if (raw) {
+      var st = JSON.parse(raw);
+      currentStep = st.currentStep || 0;
+    }
+  } catch(e) {}
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    showSaveToast();
+  } catch(e) {
+    console.error('Save failed:', e);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify({ currentStep: currentStep }));
+  } catch(e) {}
+}
+
+var toastTimer = null;
+function showSaveToast() {
+  var toast = document.getElementById('saveToast');
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 1500);
+}
+
+/* ========================================================================
+   NAVIGATION
+   ======================================================================== */
+
+function buildNav() {
+  var list = document.getElementById('navList');
+  list.innerHTML = '';
+  for (var i = 0; i < sectionDefs.length; i++) {
+    var sd = sectionDefs[i];
+    var li = document.createElement('li');
+    var btn = document.createElement('button');
+    btn.className = 'nav-item' + (i === currentStep ? ' active' : '');
+    btn.dataset.step = i;
+    btn.onclick = function() { goTo(parseInt(this.dataset.step, 10)); };
+
+    var check = document.createElement('span');
+    check.className = 'nav-check';
+    check.id = 'navcheck-' + i;
+
+    var num = document.createElement('span');
+    num.className = 'nav-num';
+    num.textContent = (i === 0 ? '' : (i + '.'));
+
+    var txt = document.createElement('span');
+    txt.className = 'nav-text';
+    txt.textContent = sd.title;
+
+    btn.appendChild(check);
+    btn.appendChild(num);
+    btn.appendChild(txt);
+    li.appendChild(btn);
+    list.appendChild(li);
+  }
+}
+
+function goTo(step) {
+  if (step < 0) step = 0;
+  if (step >= sectionDefs.length) step = sectionDefs.length - 1;
+  currentStep = step;
+
+  /* Show/hide sections */
+  var sections = document.querySelectorAll('.section');
+  for (var i = 0; i < sections.length; i++) {
+    sections[i].classList.remove('active');
+  }
+  var target = document.getElementById('sec-' + step);
+  if (target) target.classList.add('active');
+
+  /* Update nav active state */
+  var navItems = document.querySelectorAll('.nav-item');
+  for (var j = 0; j < navItems.length; j++) {
+    navItems[j].classList.remove('active');
+  }
+  var activeNav = document.querySelector('.nav-item[data-step="' + step + '"]');
+  if (activeNav) activeNav.classList.add('active');
+
+  /* Update checkmarks */
+  updateNavChecks();
+
+  /* Update progress */
+  updateProgress();
+
+  /* If summary section, render it */
+  if (step === 10) {
+    renderSummary();
+  }
+
+  saveState();
+
+  /* Scroll to top */
+  window.scrollTo(0, 0);
+
+  /* Close sidebar on mobile */
+  if (window.innerWidth <= 850) {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+/* ========================================================================
+   COMPLETION TRACKING
+   ======================================================================== */
+
+function sectionHasData(step) {
+  switch(step) {
+    case 0: return false; /* Welcome is never "complete" */
+    case 1: {
+      var p = data.personal || {};
+      var hasBasic = p.fullName || p.dob || p.address || p.phone;
+      var hasChildren = data.children && data.children.length > 0;
+      var hasContacts = data.contacts && data.contacts.length > 0;
+      return hasBasic && hasChildren && hasContacts;
+    }
+    case 2: return data.accounts && data.accounts.length > 0;
+    case 3: return data.property && data.property.length > 0;
+    case 4: return data.valuables && data.valuables.length > 0;
+    case 5: return data.digital && data.digital.length > 0;
+    case 6: return data.debts && data.debts.length > 0;
+    case 7: return data.insurance && data.insurance.length > 0;
+    case 8: {
+      var d = data.documents || {};
+      return d.hasWill || d.hasTrust || d.hasPoa || d.hasHcd || d.benReviewed;
+    }
+    case 9: {
+      var w = data.wishes || {};
+      return w.disposition || w.servicePrefs || w.organDonor || w.obituary || w.petCare || w.otherWishes;
+    }
+    case 10: return false; /* Summary is never "complete" */
+    default: return false;
+  }
+}
+
+function sectionPartialData(step) {
+  switch(step) {
+    case 0: return false;
+    case 1: {
+      var p = data.personal || {};
+      return p.fullName || p.dob || p.address || p.phone ||
+             (data.children && data.children.length > 0) ||
+             (data.contacts && data.contacts.length > 0);
+    }
+    case 2: return data.accounts && data.accounts.length > 0;
+    case 3: return data.property && data.property.length > 0;
+    case 4: return data.valuables && data.valuables.length > 0;
+    case 5: return data.digital && data.digital.length > 0;
+    case 6: return data.debts && data.debts.length > 0;
+    case 7: return data.insurance && data.insurance.length > 0;
+    case 8: {
+      var d = data.documents || {};
+      return d.hasWill || d.hasTrust || d.hasPoa || d.hasHcd || d.benReviewed;
+    }
+    case 9: {
+      var w = data.wishes || {};
+      return w.disposition || w.servicePrefs || w.organDonor || w.obituary || w.petCare || w.otherWishes;
+    }
+    default: return false;
+  }
+}
+
+function updateNavChecks() {
+  for (var i = 0; i < sectionDefs.length; i++) {
+    var check = document.getElementById('navcheck-' + i);
+    if (!check) continue;
+    if (i === 0 || i === 10) {
+      check.className = 'nav-check';
+      check.textContent = '';
+      continue;
+    }
+    if (sectionHasData(i)) {
+      check.className = 'nav-check done';
+      check.innerHTML = '\u2713';
+    } else if (sectionPartialData(i)) {
+      check.className = 'nav-check partial';
+      check.innerHTML = '\u2022';
+    } else {
+      check.className = 'nav-check';
+      check.textContent = '';
+    }
+  }
+}
+
+function updateProgress() {
+  var total = 9; /* Sections 1-9 are completable */
+  var completed = 0;
+  for (var i = 1; i <= 9; i++) {
+    if (sectionHasData(i)) completed++;
+  }
+  var pct = Math.round((completed / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+/* ========================================================================
+   REPEATABLE ENTRIES
+   ======================================================================== */
+
+function addEntry(type) {
+  var def = entryDefs[type];
+  if (!def) return;
+
+  if (!data[type]) data[type] = [];
+  var idx = data[type].length;
+  data[type].push({});
+
+  var container = document.getElementById(def.container);
+  var entryDiv = createEntryElement(type, idx);
+  container.appendChild(entryDiv);
+
+  saveData();
+  updateProgress();
+  updateNavChecks();
+}
+
+function createEntryElement(type, idx) {
+  var def = entryDefs[type];
+  var entryDiv = document.createElement('div');
+  entryDiv.className = 'entry';
+  entryDiv.dataset.type = type;
+  entryDiv.dataset.index = idx;
+
+  var header = document.createElement('div');
+  header.className = 'entry-header';
+
+  var title = document.createElement('div');
+  title.className = 'entry-title';
+  title.textContent = def.title + ' #' + (idx + 1);
+
+  var actions = document.createElement('div');
+  actions.className = 'entry-actions';
+
+  var removeBtn = document.createElement('button');
+  removeBtn.className = 'btn-remove';
+  removeBtn.textContent = '\u2715 Remove';
+  removeBtn.onclick = function() { removeEntry(type, idx); };
+
+  actions.appendChild(removeBtn);
+  header.appendChild(title);
+  header.appendChild(actions);
+  entryDiv.appendChild(header);
+
+  for (var f = 0; f < def.fields.length; f++) {
+    var field = def.fields[f];
+    entryDiv.appendChild(createField(type, field, idx));
+  }
+
+  return entryDiv;
+}
+
+function createField(type, field, idx) {
+  var fieldDiv = document.createElement('div');
+  fieldDiv.className = 'field';
+
+  var label = document.createElement('label');
+  label.className = 'field-label';
+  label.textContent = field.label;
+
+  var input;
+
+  if (field.type === 'textarea') {
+    input = document.createElement('textarea');
+  } else if (field.type === 'select') {
+    input = document.createElement('select');
+    var emptyOpt = document.createElement('option');
+    emptyOpt.value = '';
+    emptyOpt.textContent = 'Select one...';
+    input.appendChild(emptyOpt);
+    for (var o = 0; o < field.options.length; o++) {
+      var opt = document.createElement('option');
+      opt.value = field.options[o].replace(/^—\s*/, '');
+      opt.textContent = field.options[o];
+      input.appendChild(opt);
+    }
+  } else {
+    input = document.createElement('input');
+    input.type = field.type;
+  }
+
+  input.dataset.entryType = type;
+  input.dataset.entryIndex = idx;
+  input.dataset.entryField = field.name;
+  if (field.placeholder) input.placeholder = field.placeholder;
+
+  /* Load existing value */
+  if (data[type] && data[type][idx] && data[type][idx][field.name]) {
+    input.value = data[type][idx][field.name];
+  }
+
+  input.addEventListener('input', function() {
+    if (!data[type]) data[type] = [];
+    if (!data[type][idx]) data[type][idx] = {};
+    data[type][idx][field.name] = this.value;
+    saveData();
+    updateProgress();
+    updateNavChecks();
+  });
+
+  input.addEventListener('change', function() {
+    if (!data[type]) data[type] = [];
+    if (!data[type][idx]) data[type][idx] = {};
+    data[type][idx][field.name] = this.value;
+    saveData();
+    updateProgress();
+    updateNavChecks();
+  });
+
+  fieldDiv.appendChild(label);
+  fieldDiv.appendChild(input);
+
+  return fieldDiv;
+}
+
+function removeEntry(type, idx) {
+  if (!data[type]) return;
+  if (!confirm('Remove this entry? This cannot be undone.')) return;
+
+  data[type].splice(idx, 1);
+  rebuildEntries(type);
+  saveData();
+  updateProgress();
+  updateNavChecks();
+}
+
+function rebuildEntries(type) {
+  var def = entryDefs[type];
+  if (!def) return;
+  var container = document.getElementById(def.container);
+  container.innerHTML = '';
+  if (!data[type]) return;
+  for (var i = 0; i < data[type].length; i++) {
+    container.appendChild(createEntryElement(type, i));
+  }
+}
+
+function rebuildAllEntries() {
+  for (var key in entryDefs) {
+    if (entryDefs.hasOwnProperty(key)) {
+      rebuildEntries(key);
+    }
+  }
+}
+
+/* ========================================================================
+   FORM FIELD BINDING (non-repeatable)
+   ======================================================================== */
+
+function bindFormFields() {
+  /* Text inputs, textareas, selects */
+  var fields = document.querySelectorAll('[data-section][data-field]:not([data-entry-type])');
+  for (var i = 0; i < fields.length; i++) {
+    (function(f) {
+      var section = f.getAttribute('data-section');
+      var field = f.getAttribute('data-field');
+
+      /* Load existing */
+      if (data[section] && data[section][field]) {
+        f.value = data[section][field];
+      }
+
+      f.addEventListener('input', function() {
+        if (!data[section]) data[section] = {};
+        data[section][field] = f.value;
+        saveData();
+        updateProgress();
+        updateNavChecks();
+        handleFieldChange(section, field, f.value);
+      });
+
+      f.addEventListener('change', function() {
+        if (!data[section]) data[section] = {};
+        data[section][field] = f.value;
+        saveData();
+        updateProgress();
+        updateNavChecks();
+        handleFieldChange(section, field, f.value);
+      });
+    })(fields[i]);
+  }
+
+  /* Radio buttons */
+  var radios = document.querySelectorAll('input[type="radio"][data-section][data-field]');
+  for (var r = 0; r < radios.length; r++) {
+    (function(radio) {
+      var section = radio.getAttribute('data-section');
+      var field = radio.getAttribute('data-field');
+
+      if (data[section] && data[section][field] === radio.value) {
+        radio.checked = true;
+        updateRadioLabelChecked(radio);
+      }
+
+      radio.addEventListener('change', function() {
+        if (radio.checked) {
+          if (!data[section]) data[section] = {};
+          data[section][field] = radio.value;
+          saveData();
+          updateProgress();
+          updateNavChecks();
+          updateRadioGroupChecked(radio);
+          handleFieldChange(section, field, radio.value);
+        }
+      });
+    })(radios[r]);
+  }
+}
+
+function updateRadioLabelChecked(radio) {
+  var labels = document.querySelectorAll('label.radio-label');
+  for (var i = 0; i < labels.length; i++) {
+    var inp = labels[i].querySelector('input[type="radio"]');
+    if (inp && inp.name === radio.name) {
+      if (inp.checked) labels[i].classList.add('checked');
+      else labels[i].classList.remove('checked');
+    }
+  }
+}
+
+function updateRadioGroupChecked(radio) {
+  updateRadioLabelChecked(radio);
+}
+
+function handleFieldChange(section, field, value) {
+  /* Show/hide spouse fields based on marital status */
+  if (section === 'personal' && field === 'maritalStatus') {
+    var show = (value === 'married' || value === 'domestic');
+    document.getElementById('spouseGroup').style.display = show ? 'block' : 'none';
+  }
+
+  /* Show/hide document detail sections */
+  if (section === 'documents') {
+    if (field === 'hasWill') {
+      document.getElementById('willDetails').style.display = (value === 'yes') ? 'block' : 'none';
+    }
+    if (field === 'hasTrust') {
+      document.getElementById('trustDetails').style.display = (value === 'yes') ? 'block' : 'none';
+    }
+    if (field === 'hasPoa') {
+      document.getElementById('poaDetails').style.display = (value === 'yes') ? 'block' : 'none';
+    }
+    if (field === 'hasHcd') {
+      document.getElementById('hcdDetails').style.display = (value === 'yes') ? 'block' : 'none';
+    }
+  }
+}
+
+/* ========================================================================
+   SUMMARY & RECOMMENDATIONS
+   ======================================================================== */
+
+function renderSummary() {
+  var content = document.getElementById('summaryContent');
+  content.innerHTML = '';
+
+  /* Completion grid */
+  var grid = document.createElement('div');
+  grid.className = 'summary-grid';
+
+  for (var i = 1; i <= 9; i++) {
+    var card = document.createElement('div');
+    card.className = 'summary-card';
+
+    var h3 = document.createElement('h3');
+    h3.textContent = sectionDefs[i].title;
+    card.appendChild(h3);
+
+    var totalFields = countFields(i);
+    var filledFields = countFilledFields(i);
+    var pct = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+
+    var row = document.createElement('div');
+    row.className = 'summary-pct-row';
+
+    var lbl = document.createElement('span');
+    lbl.className = 'summary-pct-label';
+    lbl.textContent = filledFields + ' of ' + totalFields + ' items';
+
+    var barWrap = document.createElement('span');
+    barWrap.className = 'summary-pct-bar';
+    var barFill = document.createElement('span');
+    barFill.className = 'summary-pct-fill';
+    barFill.style.width = pct + '%';
+    barWrap.appendChild(barFill);
+
+    var pctTxt = document.createElement('span');
+    pctTxt.className = 'summary-pct-text';
+    pctTxt.textContent = pct + '%';
+
+    row.appendChild(lbl);
+    row.appendChild(barWrap);
+    row.appendChild(pctTxt);
+    card.appendChild(row);
+
+    grid.appendChild(card);
+  }
+  content.appendChild(grid);
+
+  /* Alerts — items marked "unsure" */
+  var unsureItems = findUnsureItems();
+  if (unsureItems.length > 0) {
+    var alert = document.createElement('div');
+    alert.className = 'alert-box';
+    var alertH3 = document.createElement('h3');
+    alertH3.textContent = '\u26A0\uFE0F Items Marked "Unsure" — Please Review';
+    alert.appendChild(alertH3);
+    var ul = document.createElement('ul');
+    for (var u = 0; u < unsureItems.length; u++) {
+      var li = document.createElement('li');
+      li.textContent = unsureItems[u];
+      ul.appendChild(li);
+    }
+    alert.appendChild(ul);
+    content.appendChild(alert);
+  }
+
+  /* Recommendations */
+  renderRecommendations();
+}
+
+function countFields(step) {
+  switch(step) {
+    case 1: return 7; /* name, dob, ssn, address, phone, email, marital status */
+    case 2: return data.accounts ? data.accounts.length * 6 : 1;
+    case 3: return data.property ? data.property.length * 6 : 1;
+    case 4: return data.valuables ? data.valuables.length * 4 : 1;
+    case 5: return data.digital ? data.digital.length * 5 : 1;
+    case 6: return data.debts ? data.debts.length * 4 : 1;
+    case 7: return data.insurance ? data.insurance.length * 6 : 1;
+    case 8: return 5; /* will, trust, poa, hcd, ben */
+    case 9: return 6; /* disposition, service, organ, obituary, pet, other */
+    default: return 1;
+  }
+}
+
+function countFilledFields(step) {
+  var count = 0;
+  switch(step) {
+    case 1:
+      var p = data.personal || {};
+      if (p.fullName) count++;
+      if (p.dob) count++;
+      if (p.ssn) count++;
+      if (p.address) count++;
+      if (p.phone) count++;
+      if (p.email) count++;
+      if (p.maritalStatus) count++;
+      break;
+    case 2:
+      if (data.accounts) {
+        for (var a = 0; a < data.accounts.length; a++) {
+          var acc = data.accounts[a];
+          if (acc.acctInstitution) count++;
+          if (acc.acctType) count++;
+          if (acc.acctNumber) count++;
+          if (acc.acctBalance) count++;
+          if (acc.acctBeneficiary) count++;
+          if (acc.acctNotes) count++;
+        }
+      }
+      break;
+    case 3:
+      if (data.property) {
+        for (var pr = 0; pr < data.property.length; pr++) {
+          var prop = data.property[pr];
+          if (prop.propType) count++;
+          if (prop.propDesc) count++;
+          if (prop.propTypes) count++;
+          if (prop.propAddress) count++;
+          if (prop.propValue) count++;
+          if (prop.propLoan) count++;
+          if (prop.propCoOwner) count++;
+        }
+      }
+      break;
+    case 4:
+      if (data.valuables) {
+        for (var v = 0; v < data.valuables.length; v++) {
+          var val = data.valuables[v];
+          if (val.valItem) count++;
+          if (val.valValue) count++;
+          if (val.valLocation) count++;
+          if (val.valSentiment) count++;
+        }
+      }
+      break;
+    case 5:
+      if (data.digital) {
+        for (var d = 0; d < data.digital.length; d++) {
+          var dig = data.digital[d];
+          if (dig.digPlatform) count++;
+          if (dig.digUsername) count++;
+          if (dig.digHint) count++;
+          if (dig.digAction) count++;
+          if (dig.digNotes) count++;
+        }
+      }
+      break;
+    case 6:
+      if (data.debts) {
+        for (var dt = 0; dt < data.debts.length; dt++) {
+          var debt = data.debts[dt];
+          if (debt.debtCreditor) count++;
+          if (debt.debtType) count++;
+          if (debt.debtBalance) count++;
+          if (debt.debtPayment) count++;
+        }
+      }
+      break;
+    case 7:
+      if (data.insurance) {
+        for (var ins = 0; ins < data.insurance.length; ins++) {
+          var pol = data.insurance[ins];
+          if (pol.insType) count++;
+          if (pol.insCompany) count++;
+          if (pol.insPolicyNum) count++;
+          if (pol.insCoverage) count++;
+          if (pol.insBeneficiary) count++;
+          if (pol.insAgent) count++;
+        }
+      }
+      break;
+    case 8:
+      var d2 = data.documents || {};
+      if (d2.hasWill) count++;
+      if (d2.hasTrust) count++;
+      if (d2.hasPoa) count++;
+      if (d2.hasHcd) count++;
+      if (d2.benReviewed) count++;
+      break;
+    case 9:
+      var w2 = data.wishes || {};
+      if (w2.disposition) count++;
+      if (w2.servicePrefs) count++;
+      if (w2.organDonor) count++;
+      if (w2.obituary) count++;
+      if (w2.petCare) count++;
+      if (w2.otherWishes) count++;
+      break;
+  }
+  return count;
+}
+
+function findUnsureItems() {
+  var items = [];
+
+  /* Accounts with beneficiary "unsure" */
+  if (data.accounts) {
+    for (var i = 0; i < data.accounts.length; i++) {
+      var a = data.accounts[i];
+      if (a.acctBeneficiary && a.acctBeneficiary.indexOf('Not sure') >= 0) {
+        items.push('Financial Account: "' + (a.acctInstitution || 'Unnamed account') + '" — beneficiary status unsure');
+      }
+    }
+  }
+
+  /* Documents marked "unsure" */
+  var d = data.documents || {};
+  if (d.hasWill === 'unsure') items.push('Will — not sure if you have one');
+  if (d.hasTrust === 'unsure') items.push('Trust — not sure if you have one');
+  if (d.hasPoa === 'unsure') items.push('Power of Attorney — not sure if you have one');
+  if (d.hasHcd === 'unsure') items.push('Healthcare Directive — not sure if you have one');
+  if (d.benReviewed === 'unsure') items.push('Beneficiary Designations — not sure if reviewed recently');
+
+  return items;
+}
+
+function parseCurrency(str) {
+  if (!str) return 0;
+  var cleaned = String(str).replace(/[^0-9.]/g, '');
+  var val = parseFloat(cleaned);
+  return isNaN(val) ? 0 : val;
+}
+
+function getTotalAssets() {
+  var total = 0;
+  if (data.accounts) {
+    for (var i = 0; i < data.accounts.length; i++) {
+      total += parseCurrency(data.accounts[i].acctBalance);
+    }
+  }
+  if (data.property) {
+    for (var j = 0; j < data.property.length; j++) {
+      total += parseCurrency(data.property[j].propValue);
+    }
+  }
+  if (data.valuables) {
+    for (var k = 0; k < data.valuables.length; k++) {
+      total += parseCurrency(data.valuables[k].valValue);
+    }
+  }
+  return total;
+}
+
+function hasRealEstate() {
+  if (!data.property) return false;
+  for (var i = 0; i < data.property.length; i++) {
+    var t = (data.property[i].propType || '').toLowerCase();
+    if (t === 'home' || t === 'land / lot' || t === 'land' || t.indexOf('land') >= 0 || t === 'home') return true;
+  }
+  return false;
+}
+
+function hasMultipleStateProperty() {
+  if (!data.property) return false;
+  var states = {};
+  for (var i = 0; i < data.property.length; i++) {
+    var addr = data.property[i].propAddress || '';
+    /* Simple heuristic: look for 2-letter state abbreviations or state names */
+    var match = addr.match(/\b([A-Z]{2})\b\s*\d{5}/);
+    if (match) {
+      states[match[1]] = true;
+    }
+  }
+  return Object.keys(states).length > 1;
+}
+
+function hasMinorChildren() {
+  if (!data.children) return false;
+  for (var i = 0; i < data.children.length; i++) {
+    if (data.children[i].childMinor && data.children[i].childMinor.indexOf('Yes') >= 0) return true;
+  }
+  return false;
+}
+
+function isMarriedWithPriorChildren() {
+  var p = data.personal || {};
+  var married = (p.maritalStatus === 'married' || p.maritalStatus === 'domestic');
+  var prior = (p.secondMarriage === 'yes-me' || p.secondMarriage === 'yes-spouse' || p.secondMarriage === 'yes-both');
+  if (!married || !prior) return false;
+  if (!data.children) return false;
+  return data.children.length > 0;
+}
+
+function renderRecommendations() {
+  var recDiv = document.getElementById('recommendationsDiv');
+  recDiv.innerHTML = '';
+
+  var recs = [];
+  var totalAssets = getTotalAssets();
+  var realEstate = hasRealEstate();
+  var multiState = hasMultipleStateProperty();
+  var minorChildren = hasMinorChildren();
+  var marriedPrior = isMarriedWithPriorChildren();
+
+  if (totalAssets > 100000 || realEstate) {
+    recs.push({ icon: '\u{1F4C4}', text: 'Your total estimated assets are over $100,000 or you own real estate. A revocable living trust may help your family avoid probate, which can be time-consuming and costly.' });
+  }
+
+  if (marriedPrior) {
+    recs.push({ icon: '\u{1F46A}', text: 'You are married and have children from a prior relationship. A trust can help ensure your assets go where you intend — both to your current spouse and to your children.' });
+  }
+
+  if (multiState) {
+    recs.push({ icon: '\u{1F5FA}\u{FE0F}', text: 'You own property in more than one state. A trust can help your family avoid separate probate proceedings in each state where you own property.' });
+  }
+
+  if (minorChildren) {
+    recs.push({ icon: '\u{1F476}', text: 'You have children under 18. A trust can manage assets for your children until they reach an age you choose, rather than giving them full access at 18.' });
+  }
+
+  /* Privacy note — always show as informational */
+  recs.push({ icon: '\u{1F512}', text: 'Unlike a will, a trust is not public record. If privacy is important to you, a trust keeps your estate details private.' });
+
+  if (totalAssets < 50000 && !realEstate) {
+    recs.push({ icon: '\u270F\u{FE0F}', text: 'Based on what you\'ve entered, your total assets are under $50,000 and you don\'t own real estate. A simple will may be sufficient for your needs, though you may still want to consult an attorney.' });
+  }
+
+  /* Build recommendation box */
+  var box = document.createElement('div');
+  box.className = 'recommendation-box';
+
+  var h3 = document.createElement('h3');
+  h3.textContent = '\u{1F4A1} Suggestions for You';
+  box.appendChild(h3);
+
+  for (var r = 0; r < recs.length; r++) {
+    var item = document.createElement('div');
+    item.className = 'recommendation-item';
+    var icon = document.createElement('span');
+    icon.className = 'icon';
+    icon.textContent = recs[r].icon;
+    var text = document.createElement('span');
+    text.textContent = recs[r].text;
+    item.appendChild(icon);
+    item.appendChild(text);
+    box.appendChild(item);
+  }
+
+  recDiv.appendChild(box);
+}
+
+/* ========================================================================
+   EXPORT
+   ======================================================================== */
+
+function exportJSON() {
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.download = 'estate-planning-data-' + dateStr + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function confirmReset() {
+  if (!confirm('This will permanently delete ALL information you have entered. This cannot be undone. Are you sure?')) return;
+  if (!confirm('Are you absolutely sure? All your data will be gone forever.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STATE_KEY);
+  data = {};
+  currentStep = 0;
+  location.reload();
+}
+
+/* ========================================================================
+   BOOT
+   ======================================================================== */
+
+function init() {
+  loadData();
+  loadState();
+  buildNav();
+  bindFormFields();
+  rebuildAllEntries();
+
+  /* Apply conditional visibility on load */
+  if (data.personal) {
+    handleFieldChange('personal', 'maritalStatus', data.personal.maritalStatus || '');
+  }
+  if (data.documents) {
+    handleFieldChange('documents', 'hasWill', data.documents.hasWill || '');
+    handleFieldChange('documents', 'hasTrust', data.documents.hasTrust || '');
+    handleFieldChange('documents', 'hasPoa', data.documents.hasPoa || '');
+    handleFieldChange('documents', 'hasHcd', data.documents.hasHcd || '');
+  }
+
+  /* If no entries exist for repeatable sections, add one blank entry */
+  for (var key in entryDefs) {
+    if (entryDefs.hasOwnProperty(key)) {
+      if (!data[key] || data[key].length === 0) {
+        if (!data[key]) data[key] = [];
+        data[key].push({});
+        rebuildEntries(key);
+      }
+    }
+  }
+
+  updateNavChecks();
+  updateProgress();
+  goTo(currentStep);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
