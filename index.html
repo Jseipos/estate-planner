@@ -1407,11 +1407,15 @@ function goTo(step) {
   /* Close sidebar on mobile */
   if (window.innerWidth <= 850) {
     document.getElementById('sidebar').classList.remove('open');
+    document.querySelector('.menu-toggle').style.display = '';
   }
 }
 
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+  var sidebar = document.getElementById('sidebar');
+  var btn = document.querySelector('.menu-toggle');
+  sidebar.classList.toggle('open');
+  btn.style.display = sidebar.classList.contains('open') ? 'none' : '';
 }
 
 /* ========================================================================
